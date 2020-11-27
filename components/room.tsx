@@ -13,7 +13,11 @@ export default function(props: Props) {
   };
 
   return <View>
-    <Text>In room {props.roomEndpoint}</Text>
-    <Text> Join a different room: <TextInput onSubmitEditing={updateRoom} /> </Text>
+    <Text selectable={true}>In room {props.roomEndpoint}</Text>
+    <Text> Join a different room:</Text>
+    <TextInput
+      onSubmitEditing={updateRoom}
+      placeholder={"Room URL"}
+    />
   </View>
 }

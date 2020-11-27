@@ -34,4 +34,15 @@ const updateRoomTempo = (roomEndpoint: string, tempo: Tempo) => {
     })
 };
 
-export { createRoom, updateRoomTempo };
+const getRoomTempo = (roomEndpoint: string): Promise<Tempo> => {
+  console.log("getting tempo from", roomEndpoint);
+  return fetch(roomEndpoint)
+    .then((response) => {
+      return response.json()
+    })
+    .catch((error) => {
+      console.error(error);
+    })
+};
+
+export { createRoom, updateRoomTempo, getRoomTempo };

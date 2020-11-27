@@ -3,7 +3,6 @@ import { Tempo } from './index';
 import { Animated } from 'react-native';
 
 const tock = (tockSound: Audio.Sound) => {
-  console.log('tock');
   tockSound.replayAsync();
 };
 
@@ -17,7 +16,6 @@ const bpmToMillisPerBeat = (bpm: number) => {
 };
 
 const setTock = (tempo: Tempo) => {
-  console.log(tempo);
   let tockSound = new Audio.Sound();
   tockSound.loadAsync(require('./assets/tock.mp3'));
   Animated.delay(timeTilNextTock(tempo));
