@@ -7,7 +7,8 @@ const tock = (tockSound: Audio.Sound) => {
 };
 
 const timeTilNextTock = (tempo: Tempo, offset: number) => {
-  return -(new Date().getTime() + offset - tempo.startTime.getTime() )
+  const start = tempo.startTime.valueOf();
+  return -(new Date().getTime() + offset - start )
     % bpmToMillisPerBeat(tempo.bpm);
 };
 

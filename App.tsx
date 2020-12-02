@@ -20,7 +20,6 @@ export default function App() {
           console.error(error);
           return;
       }
-     
       setOffset(new Date().getTime() - serverDate.getTime());
     });
   }, []);

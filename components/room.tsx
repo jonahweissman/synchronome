@@ -9,7 +9,6 @@ interface Props {
 export default function(props: Props) {
   const updateRoom = (event: any) => {
     props.onRoomChange(event.nativeEvent.text);
-    console.log(event.nativeEvent.text);
   };
 
   return <View>
