@@ -48,12 +48,13 @@ export default function App() {
       getRoomTempo(roomEndpoint)
         .then((roomTempo) => {
           if (!tempoEquals(tempo, roomTempo)) {
+            console.log('new room tempo', roomTempo);
             setTempo(roomTempo)
           }
         });
     }, 1000);
     return () => {clearInterval(intervalID)}
-  });
+  }, [tempo, roomEndpoint]);
 
   return (
     <View style={styles.container}>
@@ -65,7 +66,7 @@ export default function App() {
 }
 
 const tempoEquals = (t1: Tempo, t2: Tempo) =>
-  t1.bpm == t2.bpm && t1.startTime == t2.startTime;
+  t1.bpm == t2.bpm && t1.startTime.valueOf() == t2.startTime.valueOf();
 
 const styles = StyleSheet.create({
   container: {

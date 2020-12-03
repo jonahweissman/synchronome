@@ -1,5 +1,5 @@
 import { Text, TextInput } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { Tempo } from '../index';
 
@@ -13,13 +13,17 @@ const metronome = (props: Props) => {
   const updateTempo = (newBpm: string) => {
     setDisplayBpm(newBpm);
     const bpm = parseInt(newBpm, 10);
-    if (bpm >= 0 && bpm < 300) {
+    if (validBpm(bpm)) {
       props.onTempoChange({
         bpm,
         startTime: new Date(),
       })
     }
   };
+  useEffect(() => {
+    setDisplayBpm(props.tempo.bpm.toString());
+  }, [props.tempo]);
+
   return <>
     <TextInput
       value={displayBpm}
@@ -30,4 +34,5 @@ const metronome = (props: Props) => {
   </>
 };
 
+const validBpm = (bpm: number): boolean => bpm >=0 && bpm < 300;
 export default metronome;

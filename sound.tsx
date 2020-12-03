@@ -7,8 +7,7 @@ const tock = (tockSound: Audio.Sound) => {
 };
 
 const timeTilNextTock = (tempo: Tempo, offset: number) => {
-  const start = tempo.startTime.valueOf();
-  return -(new Date().getTime() + offset - start )
+  return -(new Date().getTime() + offset - tempo.startTime.getTime())
     % bpmToMillisPerBeat(tempo.bpm);
 };
 
@@ -19,7 +18,7 @@ const bpmToMillisPerBeat = (bpm: number) => {
 const setTock = (tempo: Tempo, offset: number) => {
   let tockSound = new Audio.Sound();
   tockSound.loadAsync(require('./assets/tock.mp3'));
-  Animated.delay(timeTilNextTock(tempo, offset) + bpmToMillisPerBeat(tempo.bpm));
+  // Animated.delay(timeTilNextTock(tempo, offset) + bpmToMillisPerBeat(tempo.bpm));
   let intervalID = setInterval(() => { tock(tockSound)}, bpmToMillisPerBeat(tempo.bpm));
   return () => {
     clearTimeout(intervalID);
