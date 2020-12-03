@@ -59,7 +59,9 @@ export default function App() {
   return (
     <View style={styles.container}>
       <Metronome tempo={tempo} onTempoChange={setTempo} />
-      {roomEndpoint == "" ? <ActivityIndicator/> : <Room roomEndpoint={roomEndpoint} onRoomChange={setRoomEndpoint} />}
+      <View style={{flex: 1}}>
+        {roomEndpoint == "" ? <ActivityIndicator/> : <Room roomEndpoint={roomEndpoint} onRoomChange={setRoomEndpoint} />}
+      </View>
       <StatusBar style="auto" />
     </View>
   );
