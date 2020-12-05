@@ -1,13 +1,8 @@
 import { Audio } from 'expo-av';
 import { Tempo } from './index';
-import { Animated } from 'react-native';
-
-const tock = (tockSound: Audio.Sound) => {
-  tockSound.replayAsync();
-};
 
 const timeTilNextTock = (tempo: Tempo, offset: number) => {
-  return -(new Date().getTime() + offset - tempo.startTime.getTime())
+  return bpmToMillisPerBeat(tempo.bpm)-(new Date().getTime() + offset - tempo.startTime.getTime())
     % bpmToMillisPerBeat(tempo.bpm);
 };
 
@@ -17,9 +12,18 @@ const bpmToMillisPerBeat = (bpm: number) => {
 
 const setTock = (tempo: Tempo, offset: number) => {
   let tockSound = new Audio.Sound();
-  tockSound.loadAsync(require('./assets/tock.mp3'));
-  // Animated.delay(timeTilNextTock(tempo, offset) + bpmToMillisPerBeat(tempo.bpm));
-  let intervalID = setInterval(() => { tock(tockSound)}, bpmToMillisPerBeat(tempo.bpm));
+  tockSound.loadAsync(require('./assets/tockAt10.162.mp3'));
+  const tockPosition = 10000;
+  const correction = 0;
+  const interval = 250;
+  let intervalID = setInterval(() => {
+    const runway = timeTilNextTock(tempo, offset);
+    if (runway < interval) {
+      tockSound.playFromPositionAsync(
+        Math.max(0, tockPosition - (runway - correction))
+      );
+    }
+  }, interval);
   return () => {
     clearTimeout(intervalID);
     tockSound.unloadAsync();

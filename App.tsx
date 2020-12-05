@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
-import ntpClient from 'react-native-ntp-client';
+import clockSync from 'react-native-clock-sync';
 
 import Metronome from './components/metronome';
 import Room from './components/room';
@@ -12,17 +12,9 @@ import { createRoom, updateRoomTempo, getRoomTempo } from './sync';
 export default function App() {
   const [tempo, setTempo] = useState({bpm: 60, startTime: new Date()});
   const [roomEndpoint, setRoomEndpoint] = useState("");
-  const [offset, setOffset] = useState(NaN);
-
-  useEffect(() => {
-    ntpClient.getNetworkTime("pool.ntp.org", 123, (error: any, serverDate: Date) => {
-      if (error) {
-          console.error(error);
-          return;
-      }
-      setOffset(new Date().getTime() - serverDate.getTime());
-    });
-  }, []);
+  const [clock, setClock] = useState(new clockSync({
+    syncDelay: 60
+  }));
 
   useEffect(() => {
       createRoom().then((room: string) => {
@@ -32,10 +24,11 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (offset != NaN) {
+    const offset = new Date().getTime() - clock.getTime();
+    if (!isNaN(offset)) {
       return setTock(tempo, offset);
     }
-  }, [tempo, offset]);
+  }, [tempo]);
 
   useEffect(() => {
     if (roomEndpoint != "") {
