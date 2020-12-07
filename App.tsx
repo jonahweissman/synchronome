@@ -1,20 +1,22 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
-import clockSync from 'react-native-clock-sync';
+import ntpClient from 'react-native-ntp-client';
 
 import Metronome from './components/metronome';
 import Room from './components/room';
 import setTock from './sound';
-import { Tempo } from './index';
+import { Tempo, ServerTime, isoServerTime, convertToServerTime } from './tempo';
 import { createRoom, updateRoomTempo, getRoomTempo } from './sync';
 
 export default function App() {
-  const [tempo, setTempo] = useState({bpm: 60, startTime: new Date()});
+  const [tempo, setTempo] = useState({
+    bpm: 60,
+    startTime: isoServerTime.wrap(new Date())
+  });
   const [roomEndpoint, setRoomEndpoint] = useState("");
-  const [clock, setClock] = useState(new clockSync({
-    syncDelay: 60
-  }));
+  const [timeDelta, setTimeDelta] = useState(NaN);
+  // server time = local time + time delta
 
   useEffect(() => {
       createRoom().then((room: string) => {
@@ -24,17 +26,32 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const offset = new Date().getTime() - clock.getTime();
-    if (!isNaN(offset)) {
-      return setTock(tempo, offset);
+    ntpClient.getNetworkTime(
+      "pool.ntp.org",
+      123,
+      (error: any, serverDate: ServerTime) => {
+        if (error) {
+          console.error(error);
+          return;
+        }
+        setTimeDelta(
+          isoServerTime.unwrap(serverDate).getTime() - new Date().getTime()
+        );
+      }
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!isNaN(timeDelta)) {
+      return setTock(tempo, timeDelta);
     }
-  }, [tempo]);
+  }, [tempo, timeDelta]);
 
   useEffect(() => {
     if (roomEndpoint != "") {
         updateRoomTempo(roomEndpoint, tempo);
     }
-  }, [tempo]);
+  }, [tempo, timeDelta]);
 
   useEffect(() => {
     const intervalID = setInterval(() => {
@@ -49,9 +66,18 @@ export default function App() {
     return () => {clearInterval(intervalID)}
   }, [tempo, roomEndpoint]);
 
+  const setTempoWithLocalTime = (bpm: number) => {
+    setTempo({
+      bpm,
+      startTime: convertToServerTime(new Date(), timeDelta)
+    });
+  };
+
   return (
     <View style={styles.container}>
-      <Metronome tempo={tempo} onTempoChange={setTempo} />
+      {isNaN(timeDelta) ?
+      <ActivityIndicator size={'large'} /> :
+      <Metronome tempo={tempo} onBpmChange={setTempoWithLocalTime} />}
       <View style={{flex: 1}}>
         {roomEndpoint == "" ? <ActivityIndicator/> : <Room roomEndpoint={roomEndpoint} onRoomChange={setRoomEndpoint} />}
       </View>

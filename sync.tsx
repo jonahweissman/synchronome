@@ -1,4 +1,4 @@
-import { Tempo } from './index';
+import { Tempo, isoServerTime } from './tempo';
 
 const createRoom = () => {
   console.log('creating room');
@@ -35,15 +35,17 @@ const updateRoomTempo = (roomEndpoint: string, tempo: Tempo) => {
 };
 
 const getRoomTempo = (roomEndpoint: string): Promise<Tempo> => {
-  console.log("getting tempo from", roomEndpoint);
   return new Promise((resolve, reject) => {
     fetch(roomEndpoint)
     .then((response) => {
       return response.json()
     })
-    .then((tempo: Tempo) => {
+    .then((tempo: any) => {
       const { bpm, startTime } = tempo;
-      resolve({ bpm, startTime: new Date(startTime) } as Tempo);
+      resolve({
+        bpm,
+        startTime: isoServerTime.wrap(new Date(startTime))
+      } as Tempo);
     })
     .catch((error) => {
       console.error(error);

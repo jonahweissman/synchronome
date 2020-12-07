@@ -3,7 +3,7 @@ import { View, Text, TextInput, Button, Modal } from 'react-native';
 
 interface Props {
   roomEndpoint: string;
-  onRoomChange: (arg0: string) => void;
+  onRoomChange: (room: string) => void;
 }
 
 export default function(props: Props) {

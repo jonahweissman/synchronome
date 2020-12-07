@@ -1,23 +1,20 @@
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 import React, { useState, useEffect } from 'react';
 
-import { Tempo } from '../index';
+import { Tempo } from '../tempo';
 
 interface Props {
-  onTempoChange: (tempo: Tempo) => void;
+  onBpmChange: (bpm: number) => void;
   tempo: Tempo;
 }
 
 const metronome = (props: Props) => {
   const [displayBpm, setDisplayBpm] = useState(props.tempo.bpm.toString());
-  const updateTempo = (newBpm: string) => {
+  const updateBpm = (newBpm: string) => {
     setDisplayBpm(newBpm);
     const bpm = parseInt(newBpm, 10);
     if (validBpm(bpm)) {
-      props.onTempoChange({
-        bpm,
-        startTime: new Date(),
-      })
+      props.onBpmChange(bpm)
     }
   };
   useEffect(() => {
@@ -30,7 +27,7 @@ const metronome = (props: Props) => {
         style={styles.bpmNumber}
         value={displayBpm}
         keyboardType={'numeric'}
-        onChangeText={updateTempo}
+        onChangeText={updateBpm}
       />
     </View>
     <View style={styles.bpmTextWrapper}>
