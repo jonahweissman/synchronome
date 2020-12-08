@@ -1,5 +1,6 @@
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 import React, { useState, useEffect } from 'react';
+import { useKeepAwake } from 'expo-keep-awake';
 
 import { Tempo } from '../tempo';
 
@@ -9,6 +10,7 @@ interface Props {
 }
 
 const metronome = (props: Props) => {
+  useKeepAwake();
   const [displayBpm, setDisplayBpm] = useState(props.tempo.bpm.toString());
   const updateBpm = (newBpm: string) => {
     setDisplayBpm(newBpm);
