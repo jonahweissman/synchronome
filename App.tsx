@@ -6,7 +6,13 @@ import ntpClient from 'react-native-ntp-client';
 import Metronome from './components/metronome';
 import Room from './components/room';
 import setTock from './sound';
-import { Tempo, ServerTime, isoServerTime, convertToServerTime } from './tempo';
+import {
+  Tempo,
+  ServerTime,
+  isoServerTime,
+  convertToServerTime,
+  tempoEquals
+} from './tempo';
 import { createRoom, updateRoomTempo, getRoomTempo } from './sync';
 
 export default function App() {
@@ -53,16 +59,16 @@ export default function App() {
     }
   }, [tempo, timeDelta]);
 
+  const refreshFromRoom = async () => {
+    const roomTempo = await getRoomTempo(roomEndpoint)
+    if (!tempoEquals(tempo, roomTempo)) {
+      console.log('new room tempo', roomTempo);
+      setTempo(roomTempo)
+    }
+  };
+
   useEffect(() => {
-    const intervalID = setInterval(() => {
-      getRoomTempo(roomEndpoint)
-        .then((roomTempo) => {
-          if (!tempoEquals(tempo, roomTempo)) {
-            console.log('new room tempo', roomTempo);
-            setTempo(roomTempo)
-          }
-        });
-    }, 1000);
+    const intervalID = setInterval(refreshFromRoom, 1000);
     return () => {clearInterval(intervalID)}
   }, [tempo, roomEndpoint]);
 
@@ -73,21 +79,23 @@ export default function App() {
     });
   };
 
+  const onRoomChange = (room) => {
+    setRoomEndpoint(room);
+    refreshFromRoom();
+  };
+
   return (
     <View style={styles.container}>
       {isNaN(timeDelta) ?
       <ActivityIndicator size={'large'} /> :
       <Metronome tempo={tempo} onBpmChange={setTempoWithLocalTime} />}
       <View style={{flex: 1}}>
-        {roomEndpoint == "" ? <ActivityIndicator/> : <Room roomEndpoint={roomEndpoint} onRoomChange={setRoomEndpoint} />}
+        {roomEndpoint == "" ? <ActivityIndicator/> : <Room roomEndpoint={roomEndpoint} onRoomChange={onRoomChange} />}
       </View>
       <StatusBar style="auto" />
     </View>
   );
 }
-
-const tempoEquals = (t1: Tempo, t2: Tempo) =>
-  t1.bpm == t2.bpm && t1.startTime.valueOf() == t2.startTime.valueOf();
 
 const styles = StyleSheet.create({
   container: {

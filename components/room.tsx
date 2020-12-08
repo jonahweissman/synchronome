@@ -8,21 +8,27 @@ interface Props {
 
 export default function(props: Props) {
   const [modalVisible, setModalVisible] = useState(false);
-  const updateRoom = (event: any) => {
-    props.onRoomChange(event.nativeEvent.text);
+  const [room, setRoom] = useState("");
+  const updateRoom = (newRoom: string) => {
+    props.onRoomChange(newRoom);
     setModalVisible(false);
   };
-
+  console.log(room);
   return <View>
     <Text>Current room: </Text><Text selectable={true}>{props.roomEndpoint}</Text>
-    <Button title="Change room" onPress={() => setModalVisible(true)} />
+    <Button title="Change room" onPress={() => { setModalVisible(true)}} />
     <Modal visible={modalVisible} onRequestClose={() => { setModalVisible(false) }}>
       <View style={{flex:1, justifyContent: "center"}}>
         <TextInput
-          onSubmitEditing={updateRoom}
+          onSubmitEditing={(event) => { updateRoom(event.nativeEvent.text)}}
+          onChangeText={(text) => { setRoom(text) }}
           placeholder={"new room URL"}
           autoFocus={true}
         />
+        <View style={{flexDirection: 'row', justifyContent: 'space-around'}}>
+          <Button title="Change" onPress={() => { updateRoom(room) }} />
+          <Button title="Cancel" onPress={() => { setModalVisible(false)}} />
+        </View>
       </View>
     </Modal>
   </View>
