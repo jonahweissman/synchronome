@@ -5,7 +5,6 @@ import ntpClient from 'react-native-ntp-client';
 
 import Metronome from './components/metronome';
 import Room from './components/room';
-import setTock from './sound';
 import {
   Tempo,
   ServerTime,
@@ -48,12 +47,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!isNaN(timeDelta)) {
-      return setTock(tempo, timeDelta);
-    }
-  }, [tempo, timeDelta]);
-
-  useEffect(() => {
     if (roomEndpoint != "") {
         updateRoomTempo(roomEndpoint, tempo);
     }
@@ -87,8 +80,8 @@ export default function App() {
   return (
     <View style={styles.container}>
       {isNaN(timeDelta) ?
-      <ActivityIndicator size={'large'} /> :
-      <Metronome tempo={tempo} onBpmChange={setTempoWithLocalTime} />}
+      <ActivityIndicator size={'large'} style={{flex: 2}} /> :
+      <Metronome timeDelta={timeDelta} tempo={tempo} onBpmChange={setTempoWithLocalTime} />}
       <View style={{flex: 1}}>
         {roomEndpoint == "" ? <ActivityIndicator/> : <Room roomEndpoint={roomEndpoint} onRoomChange={onRoomChange} />}
       </View>
