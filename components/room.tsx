@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Modal } from 'react-native';
+import { View, Text, TextInput, Button, Modal, Share, StyleSheet } from 'react-native';
 
 interface Props {
   roomEndpoint: string;
@@ -13,9 +13,23 @@ export default function(props: Props) {
     props.onRoomChange(newRoom);
     setModalVisible(false);
   };
-  console.log(room);
-  return <View>
-    <Text>Current room: </Text><Text selectable={true}>{props.roomEndpoint}</Text>
+
+  const onShare = () => {
+    Share.share({
+      message: props.roomEndpoint,
+    });
+  };
+
+  return <View style={styles.container}>
+    <View style={styles.horizontal}>
+      <View style={{flex: 3}}>
+        <Text>Current room: </Text>
+        <Text selectable={true}>{props.roomEndpoint}</Text>
+      </View>
+      <View style={{flex: 1}}>
+        <Button title="Share room" onPress={onShare} />
+      </View>
+    </View>
     <Button title="Change room" onPress={() => { setModalVisible(true)}} />
     <Modal visible={modalVisible} onRequestClose={() => { setModalVisible(false) }}>
       <View style={{flex:1, justifyContent: "center"}}>
@@ -33,3 +47,12 @@ export default function(props: Props) {
     </Modal>
   </View>
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  horizontal: {
+    flexDirection: 'row',
+  }
+});
