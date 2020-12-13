@@ -1,100 +1,98 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, FunctionComponent } from 'react';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import ntpClient from 'react-native-ntp-client';
 
-import Metronome from './components/metronome';
-import Room from './components/room';
+import Metronome from './components/Metronome';
+import Room from './components/Room';
 import {
-  Tempo,
-  ServerTime,
-  isoServerTime,
-  convertToServerTime,
-  tempoEquals
+    ServerTime,
+    isoServerTime,
+    convertToServerTime,
+    tempoEquals,
+    defaultTempo
 } from './tempo';
 import { createRoom, updateRoomTempo, getRoomTempo } from './sync';
 
-export default function App() {
-  const [tempo, setTempo] = useState({
-    bpm: 60,
-    startTime: isoServerTime.wrap(new Date())
-  });
-  const [roomEndpoint, setRoomEndpoint] = useState("");
-  const [timeDelta, setTimeDelta] = useState(NaN);
-  // server time = local time + time delta
+const App: FunctionComponent = () => {
+    const [tempo, setTempo] = useState(defaultTempo());
+    const [roomEndpoint, setRoomEndpoint] = useState('');
+    const [timeDelta, setTimeDelta] = useState(NaN);
+    // server time = local time + time delta
+    console.log(tempo);
+    useEffect(() => {
+        createRoom().then((room: string) => {
+            setRoomEndpoint(room);
+        });
+    }, []);
 
-  useEffect(() => {
-      createRoom().then((room: string) => {
-        setRoomEndpoint(room);
-        updateRoomTempo(room, tempo);
-      });
-  }, []);
-
-  useEffect(() => {
-    ntpClient.getNetworkTime(
-      "pool.ntp.org",
-      123,
-      (error: any, serverDate: ServerTime) => {
-        if (error) {
-          console.error(error);
-          return;
-        }
-        setTimeDelta(
-          isoServerTime.unwrap(serverDate).getTime() - new Date().getTime()
+    useEffect(() => {
+        ntpClient.getNetworkTime(
+            'pool.ntp.org',
+            123,
+            (error: any, serverDate: ServerTime) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+                if (error) {
+                    console.error(error);
+                    return;
+                }
+                setTimeDelta(
+                    isoServerTime.unwrap(serverDate).getTime() - new Date().getTime()
+                );
+            }
         );
-      }
+    }, []);
+
+    const setTempoWithLocalTime = (bpm: number) => {
+        const newTempo = {
+            bpm,
+            startTime: convertToServerTime(new Date(), timeDelta)
+        };
+        if (roomEndpoint) {
+            updateRoomTempo(roomEndpoint, newTempo);
+        }
+        setTempo(newTempo);
+    };
+
+    const onRoomChange = async (room: string) => {
+        setRoomEndpoint(room);
+        const roomTempo = await getRoomTempo(room);
+        if (!tempoEquals(tempo, roomTempo)) {
+            console.log('new room tempo', roomTempo);
+            setTempo(roomTempo);
+        }
+    };
+
+    return (
+        <View style={styles.container}>
+            {isNaN(timeDelta) ?
+                <ActivityIndicator size={'large'} style={{flex: 2}} /> :
+                <Metronome
+                    timeDelta={timeDelta}
+                    tempo={tempo}
+                    onBpmChange={setTempoWithLocalTime}
+                />}
+            <View style={{flex: 1}}>
+                {roomEndpoint == '' ?
+                    <ActivityIndicator/> :
+                    <Room
+                        roomEndpoint={roomEndpoint}
+                        onRoomChange={onRoomChange}
+                        tempo={tempo}
+                        onRoomUpdate={setTempo}
+                    />}
+            </View>
+            <StatusBar style="auto" />
+        </View>
     );
-  }, []);
-
-  useEffect(() => {
-    if (roomEndpoint != "") {
-        updateRoomTempo(roomEndpoint, tempo);
-    }
-  }, [tempo, timeDelta]);
-
-  const refreshFromRoom = async () => {
-    const roomTempo = await getRoomTempo(roomEndpoint)
-    if (!tempoEquals(tempo, roomTempo)) {
-      console.log('new room tempo', roomTempo);
-      setTempo(roomTempo)
-    }
-  };
-
-  useEffect(() => {
-    const intervalID = setInterval(refreshFromRoom, 1000);
-    return () => {clearInterval(intervalID)}
-  }, [tempo, roomEndpoint]);
-
-  const setTempoWithLocalTime = (bpm: number) => {
-    setTempo({
-      bpm,
-      startTime: convertToServerTime(new Date(), timeDelta)
-    });
-  };
-
-  const onRoomChange = (room) => {
-    setRoomEndpoint(room);
-    refreshFromRoom();
-  };
-
-  return (
-    <View style={styles.container}>
-      {isNaN(timeDelta) ?
-      <ActivityIndicator size={'large'} style={{flex: 2}} /> :
-      <Metronome timeDelta={timeDelta} tempo={tempo} onBpmChange={setTempoWithLocalTime} />}
-      <View style={{flex: 1}}>
-        {roomEndpoint == "" ? <ActivityIndicator/> : <Room roomEndpoint={roomEndpoint} onRoomChange={onRoomChange} />}
-      </View>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'stretch',
-    justifyContent: 'center',
-  },
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'stretch',
+        justifyContent: 'center',
+    },
 });
+
+export default App;
