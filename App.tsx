@@ -19,7 +19,7 @@ const App: FunctionComponent = () => {
     const [roomEndpoint, setRoomEndpoint] = useState('');
     const [timeDelta, setTimeDelta] = useState(NaN);
     // server time = local time + time delta
-    console.log(tempo);
+
     useEffect(() => {
         createRoom().then((room: string) => {
             setRoomEndpoint(room);
@@ -27,19 +27,24 @@ const App: FunctionComponent = () => {
     }, []);
 
     useEffect(() => {
-        ntpClient.getNetworkTime(
-            'pool.ntp.org',
-            123,
-            (error: any, serverDate: ServerTime) => { // eslint-disable-line @typescript-eslint/no-explicit-any
-                if (error) {
-                    console.error(error);
-                    return;
-                }
-                setTimeDelta(
-                    isoServerTime.unwrap(serverDate).getTime() - new Date().getTime()
+        const getTimeDelta = (): Promise<number> => {
+            return new Promise((resolve, reject) => {
+                ntpClient.getNetworkTime(
+                    'pool.ntp.org',
+                    123,
+                    (error: any, serverDate: ServerTime) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+                        if (error) {
+                            reject(error);
+                        }
+                        const tD = isoServerTime.unwrap(serverDate).getTime() - new Date().getTime();
+                        console.log(tD);
+                        resolve(tD);
+                    }
                 );
-            }
-        );
+            });
+        };
+        Promise.race(Array(5).fill(getTimeDelta()))
+            .then((tD) => { setTimeDelta(tD); });
     }, []);
 
     const setTempoWithLocalTime = (bpm: number) => {
