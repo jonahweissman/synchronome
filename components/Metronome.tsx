@@ -1,5 +1,5 @@
 import { View, Text, TextInput, StyleSheet } from 'react-native';
-import React, { useState, useEffect, FunctionComponent } from 'react';
+import React, { useState, useEffect, useRef, FunctionComponent } from 'react';
 import { useKeepAwake } from 'expo-keep-awake';
 import { Audio } from 'expo-av';
 
@@ -31,6 +31,7 @@ const validBpm = (bpm: number): boolean => bpm >=0 && bpm < 300;
 
 const Metronome: FunctionComponent<Props>  = (props: Props) => {
     const [displayBpm, setDisplayBpm] = useState(props.tempo.bpm.toString());
+    const tockSound = useRef(new Audio.Sound());
 
     const updateBpm = (newBpm: string) => {
         setDisplayBpm(newBpm);
@@ -46,24 +47,28 @@ const Metronome: FunctionComponent<Props>  = (props: Props) => {
     }, [props.tempo]);
 
     useEffect(() => {
+        tockSound.current.loadAsync(require('../assets/tockAt10.162.mp3'));
+        return () => {
+            tockSound.current.unloadAsync(); // eslint-disable-line react-hooks/exhaustive-deps
+        };
+    }, []);
+
+    useEffect(() => {
         console.log('timeDelta', props.timeDelta);
-        const tockSound = new Audio.Sound();
-        tockSound.loadAsync(require('../assets/tockAt10.162.mp3'));
         const tockPosition = 10000;
         const correction = 0;
         const interval = 200;
         const intervalID = setInterval(async () => {
-            const playbackStatus = await tockSound.getStatusAsync();
+            const playbackStatus = await tockSound.current.getStatusAsync();
             const runway = timeTilNextTock(props.tempo, props.timeDelta);
             if (playbackStatus.isLoaded && runway < interval) {
-                tockSound.playFromPositionAsync(
+                tockSound.current.playFromPositionAsync(
                     Math.max(0, tockPosition - (runway - correction))
                 );
             }
         }, interval);
         return () => {
             clearTimeout(intervalID);
-            tockSound.unloadAsync();
         };
     }, [props.tempo, props.timeDelta]);
 
