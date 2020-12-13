@@ -64,16 +64,18 @@ const App: FunctionComponent = () => {
 
     return (
         <View style={styles.container}>
-            {isNaN(timeDelta) ?
-                <ActivityIndicator size={'large'} style={{flex: 2}} /> :
-                <Metronome
-                    timeDelta={timeDelta}
-                    tempo={tempo}
-                    onBpmChange={setTempoWithLocalTime}
-                />}
+            <View style={{flex: 2, justifyContent: 'center'}}>
+                {isNaN(timeDelta) ?
+                    <ActivityIndicator size={'large'} color={'blue'}/> :
+                    <Metronome
+                        timeDelta={timeDelta}
+                        tempo={tempo}
+                        onBpmChange={setTempoWithLocalTime}
+                    />}
+            </View>
             <View style={{flex: 1}}>
                 {roomEndpoint == '' ?
-                    <ActivityIndicator/> :
+                    <ActivityIndicator color={'blue'}/> :
                     <Room
                         roomEndpoint={roomEndpoint}
                         onRoomChange={onRoomChange}
@@ -90,7 +92,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-        alignItems: 'stretch',
         justifyContent: 'center',
     },
 });

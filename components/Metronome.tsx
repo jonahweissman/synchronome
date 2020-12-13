@@ -84,10 +84,9 @@ const Metronome: FunctionComponent<Props>  = (props: Props) => {
 
 const styles = StyleSheet.create({
     row: {
-        flex: 2,
         flexDirection: 'row',
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     bpmNumber: {
         fontSize: 50
