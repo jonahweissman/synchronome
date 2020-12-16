@@ -9,13 +9,12 @@ import {
     ServerTime,
     isoServerTime,
     convertToServerTime,
-    tempoEquals,
-    defaultTempo
+    Tempo,
 } from './tempo';
 import { createRoom, updateRoomTempo, getRoomTempo } from './sync';
 
 const App: FunctionComponent = () => {
-    const [tempo, setTempo] = useState(defaultTempo());
+    const [tempo, setTempo] = useState(Tempo.defaultTempo());
     const [roomEndpoint, setRoomEndpoint] = useState('');
     const [timeDelta, setTimeDelta] = useState(NaN);
     // server time = local time + time delta
@@ -48,10 +47,10 @@ const App: FunctionComponent = () => {
     }, []);
 
     const setTempoWithLocalTime = (bpm: number) => {
-        const newTempo = {
+        const newTempo = new Tempo(
             bpm,
-            startTime: convertToServerTime(new Date(), timeDelta)
-        };
+            convertToServerTime(new Date(), timeDelta)
+        );
         if (roomEndpoint) {
             updateRoomTempo(roomEndpoint, newTempo);
         }
@@ -61,7 +60,7 @@ const App: FunctionComponent = () => {
     const onRoomChange = async (room: string) => {
         setRoomEndpoint(room);
         const roomTempo = await getRoomTempo(room);
-        if (!tempoEquals(tempo, roomTempo)) {
+        if (!tempo.equals(roomTempo)) {
             console.log('new room tempo', roomTempo);
             setTempo(roomTempo);
         }

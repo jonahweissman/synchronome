@@ -1,19 +1,23 @@
 import { Newtype, iso } from 'newtype-ts';
 
-export interface Tempo {
+export class Tempo {
   bpm: number;
   startTime: ServerTime;
+
+  constructor(bpm: number, startTime: ServerTime) {
+      this.bpm = bpm;
+      this.startTime = startTime;
+  }
+
+  static defaultTempo(): Tempo {
+      return new Tempo(60, isoServerTime.wrap(new Date()));
+  }
+
+  equals(other: Tempo): boolean {
+      return this.bpm == other.bpm
+          && this.startTime.valueOf() == other.startTime.valueOf();
+  }
 }
-
-export const defaultTempo = (): Tempo => {
-    return {
-        bpm: 60,
-        startTime: isoServerTime.wrap(new Date())
-    };
-};
-
-export const tempoEquals = (t1: Tempo, t2: Tempo): boolean =>
-    t1.bpm == t2.bpm && t1.startTime.valueOf() == t2.startTime.valueOf();
 
 export type ServerTime = Newtype<{ readonly ServerTime: unique symbol }, Date>
 

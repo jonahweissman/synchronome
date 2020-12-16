@@ -1,10 +1,10 @@
-import { Tempo, isoServerTime, defaultTempo } from './tempo';
+import { Tempo, isoServerTime } from './tempo';
 
 const createRoom = (): Promise<string> => {
     console.log('creating room');
     return fetch('https://jsonstorage.net/api/items', {
         method: 'POST',
-        body: JSON.stringify(defaultTempo()),
+        body: JSON.stringify(Tempo.defaultTempo()),
         headers: {
             'Content-Type': 'application/json; charset=utf-8'
         }
@@ -45,10 +45,10 @@ const getRoomTempo = (roomEndpoint: string): Promise<Tempo> => {
                 if (!(bpm && startTime)) {
                     reject('invalid room contents');
                 }
-                resolve({
+                resolve(new Tempo(
                     bpm,
-                    startTime: isoServerTime.wrap(new Date(startTime))
-                } as Tempo);
+                    isoServerTime.wrap(new Date(startTime))
+                ));
             })
             .catch((error) => {
                 console.error(error);

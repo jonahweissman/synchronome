@@ -1,7 +1,7 @@
 import React, { useState, useEffect, FunctionComponent } from 'react';
 import { View, Text, TextInput, Button, Modal, Share, StyleSheet } from 'react-native';
 
-import { tempoEquals, Tempo } from '../tempo';
+import { Tempo } from '../tempo';
 import { getRoomTempo } from '../sync';
 
 interface Props {
@@ -23,7 +23,7 @@ const Room: FunctionComponent<Props> = (props: Props) => {
     useEffect(() => {
         const intervalID = setInterval(async () => {
             const roomTempo = await getRoomTempo(roomEndpoint);
-            if (!tempoEquals(tempo, roomTempo)) {
+            if (!tempo.equals(roomTempo)) {
                 console.log('new room tempo', roomTempo);
                 onRoomUpdate(roomTempo);
             }
